@@ -70,7 +70,6 @@ class MatchCards extends React.Component {
             })
           ).then(response => {
             // Callback goes here
-            console.log(JSON.stringify(response.data))
             this.setState({maindeck: response.data.deck.maindeck})
             this.setState({sideboard: response.data.deck.sideboard})
         })
@@ -128,9 +127,6 @@ class MatchCards extends React.Component {
   saveCardOut = () => {
     cardOut = this.state.selectedCardOut;
     card = this.state.maindeck[this.state.maindeck.findIndex(i => i.id === cardOut)]
-    console.log(card)
-    console.log(this.state.maindeck)
-    console.log(this.state.maindeck.findIndex(i => i.id === cardOut))
     quantityOut = this.state.quantityOut;
     cardsOut = this.state.cardsOut
     cardsOut.push({

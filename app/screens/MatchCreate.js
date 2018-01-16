@@ -99,7 +99,6 @@ class MatchCreate extends Component {
             })
           ).then(response => {
             // Callback goes here
-            console.log(response.data.results)
             this.setState({results: response.data.results})
         })
       )

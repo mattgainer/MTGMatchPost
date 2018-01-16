@@ -40,6 +40,13 @@ class MatchResults extends Component {
       ]
     }
   }
+  goToMatch = (id, navigate) => {
+    navigate("MatchSingle", {
+      userId: this.props.navigation.state.params.userId,
+      token:  this.props.navigation.state.params.token,
+      matchId: id
+    });
+  }
   componentWillMount() {
     if (this.state.matches.length < 2 && this.props.navigation.state.params) {
       fetch('http://localhost:3001/api/matches/', {
@@ -58,6 +65,7 @@ class MatchResults extends Component {
           ).then(response => {
             // Callback goes here
             this.setState({matches: response.data.matches})
+            console.log(response.data.matches)
         })
       )
       .catch((error) => {
@@ -74,7 +82,7 @@ class MatchResults extends Component {
       <ScrollView>
         <FlatList
           data={this.state.matches}
-          renderItem={({item}) => <Text>{item.deck.archetype.name} vs. {item.opposing_archetype.name} by {item.deck.user.name}, Result: {item.result.name}</Text>}
+          renderItem={({item}) => <Text onPress={() => this.goToMatch(item.id, navigate)} >{item.deck.archetype.name} vs. {item.opposing_archetype.name} by {item.deck.user.name}, Result: {item.result.name}</Text>}
           extraData={this.state}
         />
       </ScrollView>
