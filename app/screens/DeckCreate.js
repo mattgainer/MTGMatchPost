@@ -5,92 +5,56 @@ import { StackNavigator } from 'react-navigation';
 import RestClient from 'react-native-rest-client'
 
 import {
-  View,
+  ScrollView,
   Text,
   Picker,
   TextInput,
   Button,
 } from 'react-native';
 
+
 class DeckCreate extends Component {
   constructor(props) {
     super(props);
     this.state = {
       deckName: "",
-      selectedArchetype: 1,
-      selectedFormat: 1,
-      archetypesList: [
-        {
-          name: "Temur Energy",
-          id:   1
-        },
-        {
-          name: "Gifts Control",
-          id:   2
-        },
-        {
-          name: "Jeskai Approach",
-          id:   3
-        },
-      ],
-      formats: [
-        {
-          name: "Standard",
-          id:   1,
-          archetypes: [
-            {
-              name: "Temur Energy",
-              id:   1
-            },
-            {
-              name: "Gifts Control",
-              id:   2
-            },
-            {
-              name: "Jeskai Approach",
-              id:   3
-            },
-          ]
-        },
-        {
-          name: "Modern",
-          id:   2,
-          archetypes: [
-            {
-              name: "Affinity",
-              id:   4
-            },
-            {
-              name: "TitanShift",
-              id:   5
-            },
-            {
-              name: "Tron",
-              id:   6
-            },
-          ]
-        },
-        {
-          name: "Legacy",
-          id:  3,
-          archetypes: [
-            {
-              name: "Lands",
-              id:   7
-            },
-            {
-              name: "Sneak and Show",
-              id:   8
-            },
-            {
-              name: "Death and Taxes",
-              id:   9
-            },
-          ]
-        },
-      ],
-    };
+      selectedArchetype: null,
+      selectedFormat: null,
+      archetypesList: [],
+      formats: [{
+        name: "",
+        id: null
+      }]
+    }
+    // alert(this.props.navigation.state.params);
   };
+  componentWillMount() {
+    if (this.state.formats.length <= 1 && this.props.navigation.state.params) {
+      fetch('http://localhost:3001/api/formats', {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + this.props.navigation.state.params.token
+        },
+      }).then(response =>
+          response.json().then(
+            data => ({
+              data: data,
+              status: response.status,
+            })
+          ).then(response => {
+            // Callback goes here
+            this.setState({formats: response.data.formats})
+        })
+      )
+      .catch((error) => {
+        alert(error);
+      });
+    }
+  }
+  params = this.props.navigation.state.params;
+
   setArchetypesList = (formatId) => {
     const formats = this.state.formats;
     this.setState({selectedFormat: formatId});
@@ -104,7 +68,7 @@ class DeckCreate extends Component {
   render() {
     const { navigate } = this.props.navigation;
     return (
-      <View>
+      <ScrollView>
         <Text>Deck Name</Text>
         <TextInput
           placeholder="Name Here"
@@ -132,9 +96,17 @@ class DeckCreate extends Component {
         </Picker>
         <Button
           title="Next"
-          onPress={() => navigate('DeckCards', {name: this.state.deckName, archetype: this.state.selectedArchetype})}
+          onPress={() => navigate(
+            'DeckCards',
+            {
+              name: this.state.deckName,
+              archetype: this.state.selectedArchetype,
+              userId: this.params.userId,
+              token: this.params.token,
+            }
+          )}
         />
-      </View>
+      </ScrollView>
     );
   }
 }

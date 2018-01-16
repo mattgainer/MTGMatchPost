@@ -22,25 +22,9 @@ class MatchCreate extends Component {
           id: 1,
           name: "2-0",
         },
-        {
-          id: 2,
-          name: "2-1",
-        },
-        {
-          id: 3,
-          name: "1-1",
-        },
-        {
-          id: 4,
-          name: "1-2",
-        },
-        {
-          id: 5,
-          name: "0-2",
-        },
       ],
       selectedResult: 1,
-      writeup: "",
+      writeup: " ",
       decks: [
         {
           id: 1,
@@ -49,24 +33,6 @@ class MatchCreate extends Component {
           archetype: {
             name: "Temur Energy",
             format_id: 1,
-          }
-        },
-        {
-          id: 2,
-          name: "Deck 2",
-          archetype_id: 1,
-          archetype: {
-            name: "Temur Energy",
-            format_id: 1,
-          }
-        },
-        {
-          id: 3,
-          name: "Deck 3",
-          archetype_id: 6,
-          archetype: {
-            name: "Tron",
-            format_id: 2,
           }
         },
       ],
@@ -92,45 +58,77 @@ class MatchCreate extends Component {
             },
           ]
         },
-        {
-          name: "Modern",
-          id:   2,
-          archetypes: [
-            {
-              name: "Affinity",
-              id:   4
-            },
-            {
-              name: "TitanShift",
-              id:   5
-            },
-            {
-              name: "Tron",
-              id:   6
-            },
-          ]
-        },
-        {
-          name: "Legacy",
-          id:  3,
-          archetypes: [
-            {
-              name: "Lands",
-              id:   7
-            },
-            {
-              name: "Sneak and Show",
-              id:   8
-            },
-            {
-              name: "Death and Taxes",
-              id:   9
-            },
-          ]
-        },
       ],
     };
   };
+  componentWillMount() {
+    if (this.state.formats.length < 2 && this.props.navigation.state.params) {
+      fetch('http://localhost:3001/api/formats', {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + this.props.navigation.state.params.token
+        },
+      }).then(response =>
+          response.json().then(
+            data => ({
+              data: data,
+              status: response.status,
+            })
+          ).then(response => {
+            // Callback goes here
+            this.setState({formats: response.data.formats})
+        })
+      )
+      .catch((error) => {
+        alert(error);
+      });
+      fetch('http://localhost:3001/api/results', {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + this.props.navigation.state.params.token
+        },
+      }).then(response =>
+          response.json().then(
+            data => ({
+              data: data,
+              status: response.status,
+            })
+          ).then(response => {
+            // Callback goes here
+            console.log(response.data.results)
+            this.setState({results: response.data.results})
+        })
+      )
+      .catch((error) => {
+        alert(error);
+      });
+      fetch('http://localhost:3001/api/decks?user_id=' + this.props.navigation.state.params.userId, {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + this.props.navigation.state.params.token
+        },
+      }).then(response =>
+          response.json().then(
+            data => ({
+              data: data,
+              status: response.status,
+            })
+          ).then(response => {
+            // Callback goes here
+            this.setState({decks: response.data.decks})
+        })
+      )
+      .catch((error) => {
+        alert(error);
+      });
+    }
+  }
   setArchetypesList = (deckId) => {
     this.setState({selectedDeck: deckId});
     const formats = this.state.formats;
@@ -149,6 +147,7 @@ class MatchCreate extends Component {
     const { navigate } = this.props.navigation;
     return (
       <ScrollView>
+        <Text>Deck</Text>
         <Picker
           selectedValue={this.state.selectedDeck}
           onValueChange={(itemValue, itemIndex) => this.setArchetypesList(itemValue)}>
@@ -158,6 +157,7 @@ class MatchCreate extends Component {
             );
           })}
         </Picker>
+        <Text>OpposingArchetype</Text>
         <Picker
           selectedValue={this.state.selectedArchetype}
           onValueChange={(itemValue, itemIndex) => this.setState({selectedArchetype: itemValue})}>
@@ -167,6 +167,7 @@ class MatchCreate extends Component {
             );
           })}
         </Picker>
+        <Text>Result</Text>
         <Picker
           selectedValue={this.state.selectedResult}
           onValueChange={(itemValue, itemIndex) => this.setState({selectedResult: itemValue})}>
@@ -176,9 +177,8 @@ class MatchCreate extends Component {
             );
           })}
         </Picker>
+        <Text>Writeup</Text>
         <TextInput
-          multiline={true}
-          numberOfLines={4}
           value={this.state.writeup}
           placeholder="Match Writeup Here"
           onChangeText={(writeup) => this.setState({writeup})}
@@ -190,6 +190,8 @@ class MatchCreate extends Component {
             archetype: this.state.selectedArchetype,
             result: this.state.selectedResult,
             deck: this.state.selectedDeck,
+            userId: this.props.navigation.state.params.userId,
+            token: this.props.navigation.state.params.token,
           })}
         />
       </ScrollView>

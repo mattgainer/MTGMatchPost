@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 
 import { StackNavigator } from 'react-navigation';
 
-import RestClient from 'react-native-rest-client'
+import { setUserId } from "../actions/user"
 
 import {
   Text,
@@ -16,10 +16,11 @@ class LogIn extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      username: '',
-      password: ''
+      username: 'Matt',
+      password: 'PW'
     };
   }
+
 
   static navigationOptions = {
     title: 'Log In',
@@ -27,11 +28,35 @@ class LogIn extends Component {
 
   logIn = () => {
     const { navigate } = this.props.navigation;
-    navigate("Navigation")
-    // const api = new RestApi()
-    // api.logIn(this.props.username, this.props.password)
-    //    .then(response => response.token)
-    //    .then(token => saveToken(token))
+    // const api = new BackEndApi()
+    // stuff = api.logIn(this.state.username, this.state.password).then(response => response.user)
+    fetch('http://localhost:3001/api/sessions', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        username: this.state.username,
+        password: this.state.password,
+      })
+    }).then(response =>
+        response.json().then(
+          data => ({
+            data: data,
+            status: response.status,
+          })
+        ).then(response => {
+        user = response.data.user;
+        navigate("Navigation", {
+          userId: user.id,
+          token: user.token,
+        });
+      })
+    )
+    .catch((error) => {
+      alert(error);
+    });
   }
 
   render() {
@@ -54,8 +79,6 @@ class LogIn extends Component {
           title="Log In"
           onPress={() => this.logIn()}
         />
-        <Text>{this.state.username}</Text>
-        <Text>{this.state.password}</Text>
       </View>
     );
   }

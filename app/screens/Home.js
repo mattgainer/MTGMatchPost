@@ -24,10 +24,12 @@ class Home extends Component {
           onPress={() => navigate('LogIn')}
           title="Log In"
         />
-        <Button
-          onPress={() => navigate('SignUp')}
-          title="Sign Up"
-        />
+        {
+          // <Button
+          //   onPress={() => navigate('SignUp')}
+          //   title="Sign Up"
+          // />
+        }
       </View>
     );
   }

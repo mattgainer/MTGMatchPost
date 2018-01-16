@@ -24,26 +24,43 @@ import {
 class DeckCards extends Component {
   constructor(props) {
     super(props);
-    params = this.props.navigation.state.params
     this.state = {
-      name: params.name,
-      archetype: params.archetype,
       cardInput: "",
       cardName: "",
       cardImageUrl: "",
       deckCards: [],
       cardQuantity: "1",
+      sideboard: false,
     }
   };
 
-  // CardsGet = new DeckBrewApi();
+  params = this.props.navigation.state.params
 
   updateSelectedCard = (cardName) => {
-    // card = this.CardsGet.getCardByCardName(cardName).then(response => response.data)
-    // alert(JSON.stringify(card))
-    this.setState({cardName: "Tarmogoyf"})
-    this.setState({cardImageUrl: "https://image.deckbrew.com/mtg/multiverseid/370404.jpg"})
-    this.setState({cardInput: cardName})
+    fetch('http://localhost:3001/api/deckbrew/' + cardName, {
+      method: 'GET',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + this.params.token
+      },
+    }).then(response =>
+        response.json().then(
+          data => ({
+            data: data,
+            status: response.status,
+          })
+        )
+        .then(response => {
+          this.setState({cardName: response.data.card.name})
+          this.setState({cardImageUrl: response.data.card.editions[0].image_url})
+          this.setState({cardInput: cardName})
+        }
+      )
+    )
+    .catch((error) => {
+      alert(error);
+    });
   };
   limitToNumbers = (text) => {
     let newText = '';
@@ -59,12 +76,16 @@ class DeckCards extends Component {
     }
     this.setState({ cardQuantity: newText });
   }
+  toggleSideboard = () => {
+    this.setState({sideboard: !this.state.sideboard})
+  }
   saveCard = () => {
     const deckCards = this.state.deckCards;
     deckCards.push({
-      name: this.state.cardName,
+      card_id: this.state.cardName,
       quantity: this.state.cardQuantity,
-      display: this.state.cardQuantity + "x " + this.state.cardName,
+      sideboard: this.state.sideboard,
+      display: this.state.cardQuantity + "x " + this.state.cardName + " " + this.state.sideboard,
       key: this.state.deckCards.length,
     });
     input = this.state.cardInput;
@@ -76,7 +97,44 @@ class DeckCards extends Component {
     });
   }
   saveDeck = (navigate) => {
-    navigate("Navigation")
+    fetch('http://localhost:3001/api/decks', {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + this.params.token
+      },
+      body: JSON.stringify({
+        deck: {
+          user_id: this.params.userId,
+          archetype_id: this.params.archetype,
+          name: this.params.name,
+          cards: this.state.deckCards
+        }
+      }),
+    }).then(response =>
+        response.json().then(
+          data => ({
+            data: data,
+            status: response.status,
+          })
+        ).then(response => {
+        navigate("Navigation", {
+          userId: this.params.userId,
+          token: this.params.token,
+        });
+      })
+    )
+    .catch((error) => {
+      alert(error);
+    });
+    navigate(
+      "Navigation",
+      {
+        userId: this.params.userId,
+        token: this.params.token,
+      }
+    )
   }
   static navigationOptions = {
     title: 'Create Deck Part 2/2',
@@ -100,6 +158,10 @@ class DeckCards extends Component {
         <Image
           style={{width: 171, height: 239}}
           source={{uri: this.state.cardImageUrl}}
+        />
+        <Button
+          title="Toggle In Sideboard"
+          onPress={() => this.toggleSideboard()}
         />
         <Button
           title="Save Card"

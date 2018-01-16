@@ -116,48 +116,52 @@ class MatchSearch extends Component {
     const { navigate } = this.props.navigation;
     return (
       <ScrollView>
-        <Picker
-          selectedValue={this.state.selectedFormat}
-          onValueChange={(itemValue, itemIndex) => this.setArchetypesList(itemValue)}>
-          {this.state.formats.map(format => {
-            return (
-              <Picker.Item label={format.name} value={format.id}></Picker.Item>
-            );
-          })}
-        </Picker>
-        <Picker
-          selectedValue={this.state.selectedArchetype}
-          onValueChange={(itemValue, itemIndex) => this.setState({selectedArchetype: itemValue})}>
-          {this.state.archetypesList.map(archetype => {
-            return (
-              <Picker.Item label={archetype.name} value={archetype.id}></Picker.Item>
-            );
-          })}
-        </Picker>
-        <Picker
-          selectedValue={this.state.selectedOpposingArchetype}
-          onValueChange={(itemValue, itemIndex) => this.setState({selectedOpposingArchetype: itemValue})}>
-          {this.state.archetypesList.map(archetype => {
-            return (
-              <Picker.Item label={archetype.name} value={archetype.id}></Picker.Item>
-            );
-          })}
-        </Picker>
-        <Picker
-          selectedValue={this.state.selectedResult}
-          onValueChange={(itemValue, itemIndex) => this.setState({selectedResult: itemValue})}>
-          {this.state.results.map(result => {
-            return (
-              <Picker.Item label={result.name} value={result.id}></Picker.Item>
-            );
-          })}
-        </Picker>
+      {
+        // <Picker
+        //   selectedValue={this.state.selectedFormat}
+        //   onValueChange={(itemValue, itemIndex) => this.setArchetypesList(itemValue)}>
+        //   {this.state.formats.map(format => {
+        //     return (
+        //       <Picker.Item label={format.name} value={format.id}></Picker.Item>
+        //     );
+        //   })}
+        // </Picker>
+        // <Picker
+        //   selectedValue={this.state.selectedArchetype}
+        //   onValueChange={(itemValue, itemIndex) => this.setState({selectedArchetype: itemValue})}>
+        //   {this.state.archetypesList.map(archetype => {
+        //     return (
+        //       <Picker.Item label={archetype.name} value={archetype.id}></Picker.Item>
+        //     );
+        //   })}
+        // </Picker>
+        // <Picker
+        //   selectedValue={this.state.selectedOpposingArchetype}
+        //   onValueChange={(itemValue, itemIndex) => this.setState({selectedOpposingArchetype: itemValue})}>
+        //   {this.state.archetypesList.map(archetype => {
+        //     return (
+        //       <Picker.Item label={archetype.name} value={archetype.id}></Picker.Item>
+        //     );
+        //   })}
+        // </Picker>
+        // <Picker
+        //   selectedValue={this.state.selectedResult}
+        //   onValueChange={(itemValue, itemIndex) => this.setState({selectedResult: itemValue})}>
+        //   {this.state.results.map(result => {
+        //     return (
+        //       <Picker.Item label={result.name} value={result.id}></Picker.Item>
+        //     );
+        //   })}
+        // </Picker>
+      }
         <Button
           title="Go To Results"
           onPress={() => navigate('MatchResults', {
             selectedArchetype: this.state.writeup,
             selectedOpposingArchetype: this.state.selectedArchetype,
             selectedResult: this.state.selectedResult,
+            userId: this.props.navigation.state.params.userId,
+            token: this.props.navigation.state.params.token,
           })}
         />
       </ScrollView>

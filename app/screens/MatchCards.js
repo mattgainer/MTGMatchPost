@@ -31,18 +31,6 @@ class MatchCards extends React.Component {
           card_id: "Tarmogoyf",
           quantity: 1,
         },
-        {
-          id: 2,
-          deck_id: 1,
-          card_id: "Scavenging Ooze",
-          quantity: 2,
-        },
-        {
-          id: 3,
-          deck_id: 1,
-          card_id: "Kitchen Finks",
-          quantity: 3,
-        },
       ],
       sideboard: [
         {
@@ -50,18 +38,6 @@ class MatchCards extends React.Component {
           deck_id: 1,
           card_id: "Thoughtseize",
           quantity: 1,
-        },
-        {
-          id: 5,
-          deck_id: 1,
-          card_id: "Drown in Sorrow",
-          quantity: 2,
-        },
-        {
-          id: 6,
-          deck_id: 1,
-          card_id: "Terminate",
-          quantity: 2,
         },
       ],
       cardsIn: [],
@@ -76,6 +52,34 @@ class MatchCards extends React.Component {
       deckCards: [],
     }
   };
+  params = this.props.navigation.state.params
+  componentWillMount() {
+    if (this.state.maindeck.length < 2 && this.props.navigation.state.params) {
+      fetch('http://localhost:3001/api/decks/' + this.props.navigation.state.params.deck, {
+        method: 'GET',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + this.props.navigation.state.params.token
+        },
+      }).then(response =>
+          response.json().then(
+            data => ({
+              data: data,
+              status: response.status,
+            })
+          ).then(response => {
+            // Callback goes here
+            console.log(JSON.stringify(response.data))
+            this.setState({maindeck: response.data.deck.maindeck})
+            this.setState({sideboard: response.data.deck.sideboard})
+        })
+      )
+      .catch((error) => {
+        alert(error);
+      });
+    }
+  }
   limitToNumbersIn = (text) => {
     let newText = '';
     let numbers = '0123456789';
@@ -106,7 +110,7 @@ class MatchCards extends React.Component {
   }
   saveCardIn = () => {
     cardIn = this.state.selectedCardIn;
-    card = this.state.maindeck[this.state.maindeck.indexOf(i => i.id === cardIn)]
+    card = this.state.sideboard[this.state.sideboard.findIndex(i => i.id === cardIn)]
     quantityIn = this.state.quantityIn;
     cardsIn = this.state.cardsIn
     cardsIn.push({
@@ -123,7 +127,10 @@ class MatchCards extends React.Component {
   }
   saveCardOut = () => {
     cardOut = this.state.selectedCardOut;
-    card = this.state.maindeck[this.state.maindeck.indexOf(i => i.id === cardOut)]
+    card = this.state.maindeck[this.state.maindeck.findIndex(i => i.id === cardOut)]
+    console.log(card)
+    console.log(this.state.maindeck)
+    console.log(this.state.maindeck.findIndex(i => i.id === cardOut))
     quantityOut = this.state.quantityOut;
     cardsOut = this.state.cardsOut
     cardsOut.push({
@@ -139,7 +146,40 @@ class MatchCards extends React.Component {
     });
   }
   submitMatch = (navigate) => {
-    navigate("Navigation");
+    fetch('http://localhost:3001/api/matches/', {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + this.props.navigation.state.params.token
+      },
+      body: JSON.stringify(
+        {
+          match: {
+            user_id: this.params.userId,
+            opposing_archetype_id: this.params.archetype,
+            writeup: this.params.writeup,
+            result_id: this.params.result,
+            deck_id: this.params.deck,
+            match_cards_in: this.state.cardsIn,
+            match_cards_out: this.state.cardsOut,
+          }
+        }
+      )
+    }).then(response =>
+      response.json().then(
+        data => ({
+          data: data,
+          status: response.status,
+        })
+      ).then(response => {
+        // Callback goes here
+        navigate("Navigation", {
+          userId: this.props.navigation.state.params.userId,
+          token:  this.props.navigation.state.params.token
+        });
+      })
+    )
   }
   static navigationOptions = {
     title: 'Create Match Part 2/2',
